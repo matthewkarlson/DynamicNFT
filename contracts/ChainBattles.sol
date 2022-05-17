@@ -26,6 +26,7 @@ contract ChainBattles is ERC721URIStorage {
         '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenId),'</text>',
         '</svg>'
     );
+    
     return string(
         abi.encodePacked(
             "data:image/svg+xml;base64,",
