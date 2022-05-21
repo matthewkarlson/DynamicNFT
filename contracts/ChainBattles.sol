@@ -35,7 +35,7 @@ contract ChainBattles is ERC721URIStorage {
     );
     }
 
-    fucntion getLevels(uint256 tokenID) public view return(string memory){
+    function getLevels(uint256 tokenID) public view return(string memory){
         uint256  levels = tokenIDtoLevels[tokenID];
         return levels.toString();
     }
