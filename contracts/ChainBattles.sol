@@ -23,7 +23,7 @@ contract ChainBattles is ERC721URIStorage {
         '<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>',
         '<rect width="100%" height="100%" fill="black" />',
         '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',"Warrior",'</text>',
-        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenId),'</text>',
+        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenID),'</text>',
         '</svg>'
     );
     
@@ -38,6 +38,40 @@ contract ChainBattles is ERC721URIStorage {
     fucntion getLevels(uint256 tokenID) public view return(string memory){
         uint256  levels = tokenIDtoLevels[tokenID];
         return levels.toString();
+    }
+
+    function getTokenURI(uint256 tokenID) public returns (string memory){
+    bytes memory dataURI = abi.encodePacked(
+        '{',
+            '"name": "Chain Battles #', tokenID.toString(), '",',
+            '"description": "Battles on chain",',
+            '"image": "', generateCharacter(tokenID), '"',
+        '}'
+    );
+    return string(
+        abi.encodePacked(
+            "data:application/json;base64,",
+            Base64.encode(dataURI)
+        )
+    );
+}
+
+    function mint() public {
+        _tokenIDs.increment();
+        uint256 newItemID = _tokenIDs.current();
+        _safemint(msg.sender, newItemID);
+        tokenIDtoLevels[newItemID] =0;
+        _setTokenURI(newItemID, getTokenURI(newItemID));
+    }
+
+    function train(uint256 tokenID) public{
+        require(_exists(tokenID),"Please use an existing token");
+        require(ownerOf(tokenID) == msg.sender,"You must own the token to train it");
+
+        uint256 currentLevel = tokenIDtolevels[tokenID];
+        tokenIDtoLevels[tokenID]= currentLevel +1;
+        _setTokenURI(tokenID, getTokenURI(tokenID));
+
     }
 
 }
