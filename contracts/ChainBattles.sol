@@ -11,9 +11,15 @@ contract ChainBattles is ERC721URIStorage {
     using Strings for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-    mapping(uint256 => uint256) public tokenIdtoLevels;
 
-    constructor() ERC721("ChainBattles", "CBTLS"){
+    struct attributes {
+        uint256 topSpeed;
+        uint256 acceleration;
+        uint256 handling;
+
+    }
+    mapping(uint256 => attributes) private tokenAttributes;
+    constructor() ERC721("ChainRacers", "CRCRS"){
 
     }
 
@@ -23,8 +29,10 @@ contract ChainBattles is ERC721URIStorage {
         '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
         '<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>',
         '<rect width="100%" height="100%" fill="black" />',
-        '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',"Warrior",'</text>',
-        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenId),'</text>',
+        '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',"Racer",'</text>',
+        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Top Speed: ",tokenAttributes[tokenId].topSpeed.toString(),"kph",'</text>',
+        '<text x="50%" y="60%" class="base" dominant-baseline="middle" text-anchor="middle">', "Acceleration: ",tokenAttributes[tokenId].acceleration.toString(),'</text>',
+        '<text x="50%" y="70%" class="base" dominant-baseline="middle" text-anchor="middle">', "Handling: ",tokenAttributes[tokenId].handling.toString(),'</text>',
         '</svg>'
     );
     return string(
@@ -35,10 +43,7 @@ contract ChainBattles is ERC721URIStorage {
     );
 }
 
-    function getLevels(uint256 tokenId) public view returns(string memory){
-        uint256  levels = tokenIdtoLevels[tokenId];
-        return levels.toString();
-    }
+
 
     function getTokenURI(uint256 tokenId) public view returns (string memory){
     bytes memory dataURI = abi.encodePacked(
@@ -60,16 +65,42 @@ contract ChainBattles is ERC721URIStorage {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _safeMint(msg.sender, newItemId);
-        tokenIdtoLevels[newItemId] =0;
+        tokenAttributes[newItemId].topSpeed = random(300);
+        tokenAttributes[newItemId].acceleration = random(11);
+        tokenAttributes[newItemId].handling = random(11);
         _setTokenURI(newItemId, getTokenURI(newItemId));
     }
 
-    function train(uint256 tokenId) public{
+    function random(uint number) public view returns(uint){
+        return uint(keccak256(abi.encodePacked(block.timestamp,block.difficulty,  
+        msg.sender))) % number;
+    }
+    function upgradeSpeed(uint256 tokenId) public{
         require(_exists(tokenId),"Please use an existing token");
-        require(ownerOf(tokenId) == msg.sender,"You must own the token to train it");
+        require(ownerOf(tokenId) == msg.sender,"You must own the token to upgrade it");
+        require(tokenAttributes[tokenId].handling<350,"You're at max speed!");
+        uint256 currentSpeed= tokenAttributes[tokenId].topSpeed;
+        tokenAttributes[tokenId].topSpeed= currentSpeed +1;
+        _setTokenURI(tokenId, getTokenURI(tokenId));
 
-        uint256 currentLevel = tokenIdtoLevels[tokenId];
-        tokenIdtoLevels[tokenId]= currentLevel +1;
+    }
+
+    function upgradeAcceleration(uint256 tokenId) public{
+        require(_exists(tokenId),"Please use an existing token");
+        require(ownerOf(tokenId) == msg.sender,"You must own the token to upgrade it");
+        require(tokenAttributes[tokenId].acceleration<10,"You're at max acceleration!");
+        uint256 currentAcceleration= tokenAttributes[tokenId].acceleration;
+        tokenAttributes[tokenId].acceleration= currentAcceleration +1;
+        _setTokenURI(tokenId, getTokenURI(tokenId));
+
+    }
+
+    function upgradeHandling(uint256 tokenId) public{
+        require(_exists(tokenId),"Please use an existing token");
+        require(ownerOf(tokenId) == msg.sender,"You must own the token to upgrade it");
+        require(tokenAttributes[tokenId].handling<10,"You're at max handling!");
+        uint256 currentHandling= tokenAttributes[tokenId].handling;
+        tokenAttributes[tokenId].handling= currentHandling +1;
         _setTokenURI(tokenId, getTokenURI(tokenId));
 
     }
